@@ -9,10 +9,12 @@ from .forms import ProjectForm
 
 
 class FormTest(TestCase):
-    def setUp(self):
-        self.response = self.client.get(self.url)
-
     def test_projectform_inputs(self):
+        self.form_data = {"name": "to do app"}
+        self.form = ProjectForm(data=self.form_data)
+        self.assertTrue(self.form.is_valid())
+
+    def test_taskform_inputs(self):
         self.form_data = {"name": "to do app"}
         self.form = ProjectForm(data=self.form_data)
         self.assertTrue(self.form.is_valid())
