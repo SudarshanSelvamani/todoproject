@@ -1,0 +1,12 @@
+<div>
+    <hr>
+    <a href="{% url 'logout' %}">logout</a>
+  </div>
+  {% block content %}
+    <form method="post">
+      {% csrf_token %}
+      <p>Are you sure you want to delete {{task}}?
+      <button type="submit" class="btn btn-success">Delete</button>
+      <a href="{% url 'tasks:list_task' task.project.id %}" role="button">Cancel</a>
+    </form>
+  {% endblock %}
