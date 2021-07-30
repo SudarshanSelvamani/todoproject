@@ -14,6 +14,7 @@ from .views import (
     TaskUpdateView,
     TaskDeleteView,
     TaskOverdueListView,
+    AllTaskOverdueListView,
 )
 
 # Create your tests here.
@@ -319,5 +320,33 @@ class TestTaskOverdueView(TestCase):
 
     def test_presence_of_csrf(self):
         url = reverse("tasks:list_overdue_tasks", args=[self.project1.pk])
+        response = self.client.get(url)
+        self.assertContains(response, "csrfmiddlewaretoken")
+
+
+class TestAllProjectTaskOverdueView(TestCase):
+    def setUp(self):
+        self.project1 = Project.objects.create(name="Deployment")
+
+        self.task1 = Task.objects.create(
+            text="Eat", project=self.project1, completed=True
+        )
+
+        self.task2 = Task.objects.create(
+            text="Sleep", project=self.project1, completed=False
+        )
+
+        self.url = reverse("tasks:all_overdue_tasks")
+        self.response = self.client.get(self.url)
+
+    def test_page_serve_successful(self):
+        self.assertEquals(self.response.status_code, 200)
+
+    def test_all_overdue_tasks_object_is_served(self):
+        view = resolve("")
+        self.assertEquals(view.func.view_class, AllTaskOverdueListView)
+
+    def test_presence_of_csrf(self):
+        url = reverse("tasks:all_overdue_tasks")
         response = self.client.get(url)
         self.assertContains(response, "csrfmiddlewaretoken")
