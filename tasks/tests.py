@@ -3,8 +3,14 @@ from django.test import TestCase
 from django.http import response
 from django.urls import reverse, resolve
 from tasks.models import Task, Project
-from .forms import ProjectForm
-from .views import ProjectList, TaskListView, ProjectUpdateView, ProjectDeleteView
+from .forms import ProjectForm, TaskForm
+from .views import (
+    ProjectList,
+    TaskListView,
+    ProjectUpdateView,
+    ProjectDeleteView,
+    TaskCreateView,
+)
 
 # Create your tests here.
 
@@ -16,8 +22,8 @@ class FormTest(TestCase):
         self.assertTrue(self.form.is_valid())
 
     def test_taskform_inputs(self):
-        self.form_data = {"name": "to do app"}
-        self.form = ProjectForm(data=self.form_data)
+        self.form_data = {"text": "to do app"}
+        self.form = TaskForm(data=self.form_data)
         self.assertTrue(self.form.is_valid())
 
 
@@ -160,5 +166,33 @@ class TestProjectDeleteView(TestCase):
 
     def test_presence_of_csrf(self):
         url = reverse("tasks:delete_project", args=[self.project1.pk])
+        response = self.client.get(url)
+        self.assertContains(response, "csrfmiddlewaretoken")
+
+
+class TestTaskCreateView(TestCase):
+    def setUp(self):
+        self.project1 = Project.objects.create(name="Deployment")
+
+        self.task1 = Task.objects.create(
+            text="Eat", project=self.project1, completed=True
+        )
+
+        self.task2 = Task.objects.create(
+            text="Sleep", project=self.project1, completed=False
+        )
+
+        self.url = reverse("tasks:create_task", args=[self.project1.pk])
+        self.response = self.client.get(self.url)
+
+    def test_page_serve_successful(self):
+        self.assertEquals(self.response.status_code, 200)
+
+    def test_task_create_object_is_served(self):
+        view = resolve("/projects/1/tasks/create")
+        self.assertEquals(view.func.view_class, TaskCreateView)
+
+    def test_presence_of_csrf(self):
+        url = reverse("tasks:create_task", args=[self.project1.pk])
         response = self.client.get(url)
         self.assertContains(response, "csrfmiddlewaretoken")
