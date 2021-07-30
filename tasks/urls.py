@@ -34,4 +34,9 @@ urlpatterns = [
         views.TaskDeleteView.as_view(),
         name="delete_task",
     ),
+    path(
+        "projects/<str:pk>/overduetasks",
+        views.TaskOverdueListView.as_view(),
+        name="list_overdue_tasks",
+    ),
 ]
