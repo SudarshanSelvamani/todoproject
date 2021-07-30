@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import ListView, UpdateView, DeleteView, View
 from .models import Project, Task
 from django.urls.base import reverse_lazy
-from .forms import TaskForm
+from .forms import TaskForm, ProjectForm
 
 
 # Create your views here.
@@ -13,6 +13,19 @@ class ProjectList(ListView):
     template_name = "tasks/project_list_view.html"
     model = Project
     context_object_name = "projects"
+
+
+class ProjectCreateView(View):
+    def post(self, request):
+        form = ProjectForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("tasks:list_project")
+        return render(request, "tasks/create_project_view.html", {"form": form})
+
+    def get(self, request):
+        form = ProjectForm()
+        return render(request, "tasks/create_project_view.html", {"form": form})
 
 
 class ProjectUpdateView(UpdateView):

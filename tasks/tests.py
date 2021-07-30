@@ -10,6 +10,7 @@ from .views import (
     ProjectUpdateView,
     ProjectDeleteView,
     TaskCreateView,
+    ProjectCreateView,
 )
 
 # Create your tests here.
@@ -112,6 +113,34 @@ class TestTaskListView(TestCase):
     def test_project_list_object_is_served(self):
         view = resolve("/projects/1")
         self.assertEquals(view.func.view_class, TaskListView)
+
+
+class TestProjectCreateView(TestCase):
+    def setUp(self):
+        self.project1 = Project.objects.create(name="Deployment")
+
+        self.task1 = Task.objects.create(
+            text="Eat", project=self.project1, completed=True
+        )
+
+        self.task2 = Task.objects.create(
+            text="Sleep", project=self.project1, completed=False
+        )
+
+        self.url = reverse("tasks:create_project")
+        self.response = self.client.get(self.url)
+
+    def test_page_serve_successful(self):
+        self.assertEquals(self.response.status_code, 200)
+
+    def test_project_create_object_is_served(self):
+        view = resolve("/projects/create")
+        self.assertEquals(view.func.view_class, ProjectCreateView)
+
+    def test_presence_of_csrf(self):
+        url = reverse("tasks:create_project")
+        response = self.client.get(url)
+        self.assertContains(response, "csrfmiddlewaretoken")
 
 
 class TestProjectUpdateView(TestCase):
