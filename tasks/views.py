@@ -2,7 +2,7 @@ from django.db.models.base import Model
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import ListView, UpdateView, DeleteView, View
 from .models import Project, Task
-from django.urls.base import reverse_lazy
+from django.urls.base import reverse_lazy, reverse
 from .forms import TaskForm, ProjectForm
 
 
@@ -73,9 +73,25 @@ class TaskCreateView(View):
             task = form.save(commit=False)
             task.project = self.project
             task.save()
-            return redirect("tasks:list_project")
-        return render(request, "tasks/create_task_view.html", {"form": form})
+            return redirect("tasks:list_project", kwargs={"pk": self.project.pk})
+        return render(
+            request, "tasks/create_task_view.html", {"form": form, "project_pk": pk}
+        )
 
     def get(self, request, pk):
         form = TaskForm()
-        return render(request, "tasks/create_task_view.html", {"form": form})
+        return render(
+            request, "tasks/create_task_view.html", {"form": form, "project_pk": pk}
+        )
+
+
+class TaskUpdateView(UpdateView):
+    model = Task
+    form_class = TaskForm
+    template_name = "tasks/update_task_view.html"
+    pk_url_kwarg = "task_pk"
+    context_object_name = "task"
+
+    def form_valid(self, form):
+        task = form.save()
+        return redirect(reverse("tasks:list_task", kwargs={"pk": task.project.pk}))

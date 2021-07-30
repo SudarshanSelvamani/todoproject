@@ -24,4 +24,9 @@ urlpatterns = [
         views.TaskCreateView.as_view(),
         name="create_task",
     ),
+    path(
+        "projects/<str:pk>/tasks/<str:task_pk>/update",
+        views.TaskUpdateView.as_view(),
+        name="update_task",
+    ),
 ]
