@@ -4,6 +4,7 @@ from django.http import response
 from django.urls import reverse, resolve
 from tasks.models import Task, Project
 from .forms import ProjectForm
+from .views import ProjectList
 
 # Create your tests here.
 
@@ -57,3 +58,26 @@ class ModelTest(TestCase):
         number_of_projects_after_test_create = Project.objects.all().count()
 
         self.assertEquals(number_of_projects_after_test_create, 3)
+
+
+class TestProjectListView(TestCase):
+    def setUp(self):
+        self.project1 = Project.objects.create(name="Deployment")
+
+        self.task1 = Task.objects.create(
+            text="Eat", project=self.project1, completed=True
+        )
+
+        self.task2 = Task.objects.create(
+            text="Sleep", project=self.project1, completed=False
+        )
+
+        self.url = reverse("tasks:list_project")
+        self.response = self.client.get(self.url)
+
+    def test_page_serve_successful(self):
+        self.assertEquals(self.response.status_code, 200)
+
+    def test_project_list_object_is_served(self):
+        view = resolve("/projects/")
+        self.assertEquals(view.func.view_class, ProjectList)
