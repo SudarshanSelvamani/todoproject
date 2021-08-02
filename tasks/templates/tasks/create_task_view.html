@@ -3,7 +3,7 @@
   <a href="{% url 'logout' %}">logout</a>
 </div>
 {% block content %}
-  <form method="post">
+  <form method="post" novalidate>
     {% csrf_token %}
     {{ form.as_p }}
     <button type="submit" class="btn btn-success">Create</button>

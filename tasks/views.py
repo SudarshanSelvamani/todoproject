@@ -65,12 +65,13 @@ class TaskListView(ListView):
     context_object_name = "tasks"
 
     def get_queryset(self):
-        return Task.objects.filter(project=self.kwargs.get("pk"))
+        return Task.objects.filter(
+            project=self.kwargs.get("pk"), assign_to=self.request.user
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["project"] = get_object_or_404(Project, pk=self.kwargs.get("pk"))
-        print("context", context)
         return context
 
 
@@ -82,6 +83,10 @@ class TaskCreateView(View):
         if form.is_valid():
             task = form.save(commit=False)
             task.project = self.project
+            print(self.request.user, "user")
+            task.created_by = self.request.user
+            if task.assign_to == None:
+                task.assign_to = self.request.user
             task.save()
             return redirect("tasks:list_project", kwargs={"pk": self.project.pk})
         return render(
@@ -127,7 +132,7 @@ class TaskOverdueListView(ListView):
 
     def get_queryset(self):
         tasks_not_completed = Task.objects.filter(
-            project=self.kwargs.get("pk"), completed=False
+            project=self.kwargs.get("pk"), assign_to=self.request.user, completed=False
         )
         overdue_tasks = []
         for task in tasks_not_completed:
