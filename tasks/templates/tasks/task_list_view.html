@@ -1,15 +1,43 @@
-<div><h1>List of tasks in {{project.name}}</h1></div>
+<div><h1>List of tasks in {{project.name}}</h1>
+    <div>
+        <hr>
+        <a href="{% url 'logout' %}">logout</a>
+      </div>
+</div>
 <hr>
 <div><a href="{% url 'tasks:create_task' project.id %}">Create Task</a></div>
 <hr>
+<div><a href ="{% url 'tasks:list_overdue_tasks' project.id%}">
+    Show all overdue tasks in this project
+    <hr>
+    </a>
+        <div>
+            <a href="{% url 'tasks:task_search' %}">Search Tasks</a>
+        </div>
+</div>
+
 <div>
     {% if tasks %}
     {% for task in tasks %}
+    <hr>
+    {% if task.completed %}
         <div>
             <a href="{% url 'tasks:update_task' project.id task.id %}">{{task}}</a>
-            <span><a href="{% url 'tasks:update_project' project.id%}">delete</a></span>
+            <span><a href="{% url 'tasks:delete_task' project.id task.id%}">delete</a></span>
+            Completed Task
         </div>
+    {% else %}
+    <div>
+        <a href="{% url 'tasks:update_task' project.id task.id %}">{{task}}</a>
+        <span><a href="{% url 'tasks:delete_task' project.id task.id%}">delete</a></span>
+        Uncompleted task
+    </div>
+    {% endif %}
     {% endfor %}
     {% endif %}
+</div>
 
+<hr>
+<div>
+    <a href = "{% url 'tasks:list_project' %}">Back to projects</a>
 </div>

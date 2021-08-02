@@ -1,4 +1,10 @@
-<div><h1>List of projects</h1></div>
+<div><h1>List of projects</h1>
+    <hr>
+    <a href="{% url 'logout' %}">logout</a>
+</div>
+
+<hr>
+<div><a href="{% url 'tasks:create_project' %}">Create Project</a></div>
 <hr>
 <div>
     {% if projects %}

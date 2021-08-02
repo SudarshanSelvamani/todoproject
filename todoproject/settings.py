@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "extra_views",
     "django_filters",
     "tasks",
+    "accounts",
 ]
 
 

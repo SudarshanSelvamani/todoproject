@@ -1,7 +1,12 @@
 <div>
     <h2>
-        All overdue tasks
+        Overdue tasks in all projects created by you
     </h2>
+    <div>
+        <hr>
+        <a href="{% url 'logout' %}">login</a>
+        <hr>
+      </div>
 </div>
 <div>
     {% if overdue_tasks %}

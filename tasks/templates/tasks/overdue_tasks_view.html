@@ -1,4 +1,8 @@
 <div>
+    <hr>
+    <a href="{% url 'logout' %}">logout</a>
+  </div>
+<div>
     {% if overdue_tasks %}
     {% for task in overdue_tasks %}
         <div>

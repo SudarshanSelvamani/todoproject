@@ -1,8 +1,12 @@
+<div>
+  <hr>
+  <a href="{% url 'logout' %}">logout</a>
+</div>
 {% block content %}
   <form method="post">
     {% csrf_token %}
     {{form.name}}
     <button type="submit" class="btn btn-success">Save changes</button>
-    <a href="{% url 'tasks:list_project' %}">Cancel</a>
+    <a href="{% url 'tasks:list_project' %}" role="button">Cancel</a>
   </form>
 {% endblock %}
