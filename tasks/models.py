@@ -15,6 +15,7 @@ class Project(models.Model):
 
 class Task(TimeFramedModel):
     text = models.CharField(max_length=40)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
     tag = TaggableManager()
     completed = models.BooleanField(default=False)
 
