@@ -1,6 +1,6 @@
 from django.db.models.base import Model
-from django.shortcuts import get_object_or_404
-from django.views.generic import ListView
+from django.shortcuts import get_object_or_404, redirect
+from django.views.generic import ListView, UpdateView
 from .models import Project, Task
 
 # Create your views here.
@@ -10,6 +10,20 @@ class ProjectList(ListView):
     template_name = "tasks/project_list_view.html"
     model = Project
     context_object_name = "projects"
+
+
+class ProjectUpdateView(UpdateView):
+    model = Project
+    fields = ("name",)
+    template_name = "tasks/edit_project_view.html"
+    pk_url_kwarg = "pk"
+    context_object_name = "project"
+
+    def form_valid(self, form):
+        project = form.save()
+        return redirect(
+            "tasks:list_project",
+        )
 
 
 class TaskListView(ListView):
