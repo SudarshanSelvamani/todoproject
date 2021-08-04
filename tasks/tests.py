@@ -10,6 +10,7 @@ from .views import (
     ProjectUpdateView,
     ProjectDeleteView,
     TaskCreateView,
+    ProjectCreateView,
 )
 
 # Create your tests here.
@@ -70,6 +71,41 @@ class TestTaskListView(TestCase):
     def test_url_resolve_task_list_object(self):
         view = resolve("/projects/1")
         self.assertEquals(view.func.view_class, TaskListView)
+
+
+class TestProjectCreateView(TestCase):
+    def setUp(self):
+        self.project1 = Project.objects.create(name="Deployment")
+
+        self.task1 = Task.objects.create(
+            text="Eat", project=self.project1, completed=True
+        )
+
+        self.task2 = Task.objects.create(
+            text="Sleep", project=self.project1, completed=False
+        )
+
+    def test_page_serve_successful(self):
+        self.url = reverse("tasks:create_project")
+        self.response = self.client.get(self.url)
+        self.assertEquals(self.response.status_code, 200)
+
+    def test_url_resolve_project_update_object(self):
+        view = resolve("/projects/create")
+        self.assertEquals(view.func.view_class, ProjectCreateView)
+
+    def test_presence_of_csrf(self):
+        url = reverse("tasks:create_project")
+        response = self.client.get(url)
+        self.assertContains(response, "csrfmiddlewaretoken")
+
+    def test_response_contains_projectform_object(self):
+        form = self.response.context.get("form")
+        self.assertIsInstance(form, ProjectForm)
+
+    def test_project_save(self):
+        self.client.post("projects/create", {"name": "I am a test project"})
+        self.assertEqual(Project.objects.last().name, "I am a test project")
 
 
 class TestProjectUpdateView(TestCase):
