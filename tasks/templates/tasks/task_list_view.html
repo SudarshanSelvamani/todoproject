@@ -1,0 +1,13 @@
+  
+<div><h1>List of tasks in {{project.name}}</h1></div>
+<hr>
+<div>
+    {% if tasks %}
+    {% for task in tasks %}
+        <div>
+            <a>{{task}}</a>
+        </div>
+    {% endfor %}
+    {% endif %}
+
+</div>
