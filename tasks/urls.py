@@ -13,4 +13,9 @@ urlpatterns = [
         views.ProjectUpdateView.as_view(),
         name="update_project",
     ),
+    path(
+        "projects/<str:pk>/delete",
+        views.ProjectDeleteView.as_view(),
+        name="delete_project",
+    ),
 ]

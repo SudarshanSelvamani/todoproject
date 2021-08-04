@@ -1,7 +1,9 @@
 from django.db.models.base import Model
 from django.shortcuts import get_object_or_404, redirect
-from django.views.generic import ListView, UpdateView
+from django.views.generic import ListView, UpdateView, DeleteView
 from .models import Project, Task
+from django.urls.base import reverse_lazy
+
 
 # Create your views here.
 
@@ -24,6 +26,14 @@ class ProjectUpdateView(UpdateView):
         return redirect(
             "tasks:list_project",
         )
+
+
+class ProjectDeleteView(DeleteView):
+    model = Project
+    success_url = reverse_lazy("tasks:list_project")
+    template_name = "tasks/delete_project_view.html"
+    pk_url_kwarg = "pk"
+    context_object_name = "project"
 
 
 class TaskListView(ListView):
