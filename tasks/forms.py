@@ -11,7 +11,6 @@ class ProjectForm(ModelForm):
     class Meta:
         model = Project
         fields = "__all__"
-<<<<<<< HEAD
 
 
 class TaskForm(forms.ModelForm):
@@ -30,5 +29,3 @@ class TaskForm(forms.ModelForm):
     class Meta:
         model = Task
         fields = "__all__"
-=======
->>>>>>> added project form
