@@ -1,0 +1,12 @@
+<div><h1>List of projects</h1></div>
+<hr>
+<div>
+    {% if projects %}
+    {% for project in projects %}
+        <div>
+            <a>{{project}}</a>
+        </div>
+    {% endfor %}
+    {% endif %}
+
+</div>
