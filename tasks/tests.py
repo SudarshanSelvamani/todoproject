@@ -4,7 +4,7 @@ from django.http import response
 from django.urls import reverse, resolve
 from tasks.models import Task, Project
 from .forms import ProjectForm, TaskForm
-from .views import ProjectList, TaskListView
+from .views import ProjectList, TaskListView, ProjectUpdateView
 
 # Create your tests here.
 
@@ -64,3 +64,30 @@ class TestTaskListView(TestCase):
     def test_url_resolve_task_list_object(self):
         view = resolve("/projects/1")
         self.assertEquals(view.func.view_class, TaskListView)
+
+
+class TestProjectUpdateView(TestCase):
+    def setUp(self):
+        self.project1 = Project.objects.create(name="Deployment")
+
+        self.task1 = Task.objects.create(
+            text="Eat", project=self.project1, completed=True
+        )
+
+        self.task2 = Task.objects.create(
+            text="Sleep", project=self.project1, completed=False
+        )
+
+    def test_page_serve_successful(self):
+        self.url = reverse("tasks:update_project", kwargs={"pk": self.project1.pk})
+        self.response = self.client.get(self.url)
+        self.assertEquals(self.response.status_code, 200)
+
+    def test_url_resolve_project_update_object(self):
+        view = resolve("/projects/1/update")
+        self.assertEquals(view.func.view_class, ProjectUpdateView)
+
+    def test_presence_of_csrf(self):
+        url = reverse("tasks:update_project", args=[self.project1.pk])
+        response = self.client.get(url)
+        self.assertContains(response, "csrfmiddlewaretoken")
