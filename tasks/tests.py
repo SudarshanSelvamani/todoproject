@@ -56,14 +56,11 @@ class TestTaskListView(TestCase):
             text="Sleep", project=self.project1, completed=False
         )
 
-        self.url = reverse("tasks:list_project")
-        self.response = self.client.get(self.url)
+    def test_page_serve_successful(self):
         self.url = reverse("tasks:list_task", args=[self.project1.pk])
         self.response = self.client.get(self.url)
-
-    def test_page_serve_successful(self):
         self.assertEquals(self.response.status_code, 200)
 
-    def test_project_list_object_is_served(self):
+    def test_url_resolve_task_list_object(self):
         view = resolve("/projects/1")
         self.assertEquals(view.func.view_class, TaskListView)
