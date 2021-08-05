@@ -95,3 +95,13 @@ class TaskUpdateView(UpdateView):
     def form_valid(self, form):
         task = form.save()
         return redirect(reverse("tasks:list_task", kwargs={"pk": task.project.pk}))
+
+
+class TaskDeleteView(DeleteView):
+    model = Task
+    template_name = "tasks/delete_task_view.html"
+    pk_url_kwarg = "task_pk"
+    context_object_name = "task"
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy("tasks:list_task", kwargs={"pk": self.object.project.pk})
