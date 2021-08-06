@@ -2,6 +2,7 @@ import random
 from django.test import TestCase
 from django.http import response
 from django.urls import reverse, resolve
+from datetime import datetime, timezone, timedelta
 from tasks.models import Task, Project
 from .forms import ProjectForm, TaskForm
 from .views import (
@@ -13,6 +14,7 @@ from .views import (
     ProjectCreateView,
     TaskUpdateView,
     TaskDeleteView,
+    TaskOverdueListView,
 )
 
 # Create your tests here.
@@ -263,7 +265,7 @@ class TestTaskDeleteView(TestCase):
         self.assertContains(response, "csrfmiddlewaretoken")
 
 
-class TestProjectDeleteView(TestCase):
+class TestTaskOverdueView(TestCase):
     def setUp(self):
         self.project1 = Project.objects.create(name="Deployment")
 
@@ -275,45 +277,32 @@ class TestProjectDeleteView(TestCase):
             text="Sleep", project=self.project1, completed=False
         )
 
-        self.url = reverse("tasks:delete_project", kwargs={"pk": self.project1.pk})
-        self.response = self.client.get(self.url)
-
     def test_page_serve_successful(self):
+        self.url = reverse(
+            "tasks:list_overdue_tasks",
+            kwargs={"pk": self.project1.pk},
+        )
+        self.response = self.client.get(self.url)
         self.assertEquals(self.response.status_code, 200)
 
-    def test_project_delete_object_is_served(self):
-        view = resolve("/projects/1/delete")
-        self.assertEquals(view.func.view_class, ProjectDeleteView)
+    def test_url_resolve_over_duetask_list_object(self):
+        view = resolve("projects/1/overduetasks")
+        self.assertEquals(view.func.view_class, TaskOverdueListView)
 
     def test_presence_of_csrf(self):
-        url = reverse("tasks:delete_project", args=[self.project1.pk])
+        url = reverse("tasks:list_overdue_tasks", args=[self.project1.pk])
         response = self.client.get(url)
         self.assertContains(response, "csrfmiddlewaretoken")
 
-
-class TestTaskCreateView(TestCase):
-    def setUp(self):
-        self.project1 = Project.objects.create(name="Deployment")
-
+    def test_overdue_tasks_(self):
+        self.today = datetime.now(timezone.utc)
+        self.yesterday = self.today - timedelta(days=1)
         self.task1 = Task.objects.create(
-            text="Eat", project=self.project1, completed=True
+            text="Overduetesttask",
+            project=self.project1,
+            end=self.yesterday,
+            completed=False,
         )
-
-        self.task2 = Task.objects.create(
-            text="Sleep", project=self.project1, completed=False
-        )
-
-        self.url = reverse("tasks:create_task", args=[self.project1.pk])
-        self.response = self.client.get(self.url)
-
-    def test_page_serve_successful(self):
-        self.assertEquals(self.response.status_code, 200)
-
-    def test_task_create_object_is_served(self):
-        view = resolve("/projects/1/tasks/create")
-        self.assertEquals(view.func.view_class, TaskCreateView)
-
-    def test_presence_of_csrf(self):
-        url = reverse("tasks:create_task", args=[self.project1.pk])
+        url = reverse("tasks:list_overdue_tasks", args=[self.project1.pk])
         response = self.client.get(url)
-        self.assertContains(response, "csrfmiddlewaretoken")
+        self.assertContains(response, self.task1)
