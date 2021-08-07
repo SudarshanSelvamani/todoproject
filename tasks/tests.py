@@ -3,6 +3,7 @@ from django.test import TestCase
 from django.http import response
 from django.urls import reverse, resolve
 from datetime import datetime, timezone, timedelta
+from django.urls.base import reverse_lazy
 from tasks.models import Task, Project
 from .forms import ProjectForm, TaskForm
 from .views import (
@@ -104,11 +105,13 @@ class TestProjectCreateView(TestCase):
         self.assertContains(response, "csrfmiddlewaretoken")
 
     def test_response_contains_projectform_object(self):
-        form = self.response.context.get("form")
+        self.url = reverse("tasks:create_project")
+        response = self.client.get(self.url)
+        form = response.context.get("form")
         self.assertIsInstance(form, ProjectForm)
 
     def test_project_save(self):
-        self.client.post("projects/create", {"name": "I am a test project"})
+        self.client.post("/projects/create", {"name": "I am a test project"})
         self.assertEqual(Project.objects.last().name, "I am a test project")
 
 
@@ -193,7 +196,9 @@ class TestTaskCreateView(TestCase):
         self.assertContains(response, "csrfmiddlewaretoken")
 
     def test_response_contains_taskform_object(self):
-        form = self.response.context.get("form")
+        self.url = reverse("tasks:create_task", args=[self.project1.pk])
+        response = self.client.get(self.url)
+        form = response.context.get("form")
         self.assertIsInstance(form, TaskForm)
 
     def test_task_saves(self):
@@ -225,11 +230,14 @@ class TestTaskUpdateView(TestCase):
         self.assertEquals(self.response.status_code, 200)
 
     def test_url_resolve_task_update_object(self):
-        view = resolve("projects/1/tasks/1/update")
+        from django.urls import set_urlconf
+
+        set_urlconf("todoproject.urls")
+        view = resolve("/projects/1/tasks/1/update")
         self.assertEquals(view.func.view_class, TaskUpdateView)
 
     def test_presence_of_csrf(self):
-        url = reverse("tasks:update_task", args=[self.project1.pk])
+        url = reverse("tasks:update_task", args=[self.project1.pk, self.task1.pk])
         response = self.client.get(url)
         self.assertContains(response, "csrfmiddlewaretoken")
 
@@ -256,18 +264,18 @@ class TestTaskDeleteView(TestCase):
         self.assertEquals(self.response.status_code, 200)
 
     def test_url_resolve_task_delete_object(self):
-        view = resolve("projects/1/tasks/1/delete")
+        view = resolve("/projects/1/tasks/1/delete")
         self.assertEquals(view.func.view_class, TaskDeleteView)
 
     def test_presence_of_csrf(self):
-        url = reverse("tasks:delete_task", args=[self.project1.pk])
+        url = reverse("tasks:delete_task", args=[self.project1.pk, self.task1.pk])
         response = self.client.get(url)
         self.assertContains(response, "csrfmiddlewaretoken")
 
 
 class TestTaskOverdueView(TestCase):
     def setUp(self):
-        self.project1 = Project.objects.create(name="Deployment")
+        self.project1 = Project.objects.create(name="Test Project 1")
 
         self.task1 = Task.objects.create(
             text="Eat", project=self.project1, completed=True
@@ -286,13 +294,8 @@ class TestTaskOverdueView(TestCase):
         self.assertEquals(self.response.status_code, 200)
 
     def test_url_resolve_over_duetask_list_object(self):
-        view = resolve("projects/1/overduetasks")
+        view = resolve("/projects/{}/overduetasks".format(self.project1.pk))
         self.assertEquals(view.func.view_class, TaskOverdueListView)
-
-    def test_presence_of_csrf(self):
-        url = reverse("tasks:list_overdue_tasks", args=[self.project1.pk])
-        response = self.client.get(url)
-        self.assertContains(response, "csrfmiddlewaretoken")
 
     def test_overdue_tasks_(self):
         self.today = datetime.now(timezone.utc)

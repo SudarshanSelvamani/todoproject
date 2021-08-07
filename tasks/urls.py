@@ -20,6 +20,11 @@ urlpatterns = [
         name="delete_project",
     ),
     path(
+        "projects/<str:pk>/overduetasks",
+        views.TaskOverdueListView.as_view(),
+        name="list_overdue_tasks",
+    ),
+    path(
         "projects/<str:pk>/tasks/create",
         views.TaskCreateView.as_view(),
         name="create_task",
