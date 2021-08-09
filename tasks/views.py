@@ -51,7 +51,7 @@ class ProjectDeleteView(DeleteView):
 
 
 class TaskListView(ListView):
-    template_name = "tasks/tasks_list_view.html"
+    template_name = "tasks/task_list_view.html"
     model = Task
     context_object_name = "tasks"
 
@@ -61,7 +61,6 @@ class TaskListView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["project"] = get_object_or_404(Project, pk=self.kwargs.get("pk"))
-        print("context", context)
         return context
 
 
