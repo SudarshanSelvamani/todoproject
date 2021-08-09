@@ -20,7 +20,7 @@ class ProjectCreateView(View):
         form = ProjectForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect("tasks:list_project")
+            return redirect("tasks:list_projects")
         return render(request, "tasks/create_project_view.html", {"form": form})
 
     def get(self, request):
@@ -38,13 +38,13 @@ class ProjectUpdateView(UpdateView):
     def form_valid(self, form):
         project = form.save()
         return redirect(
-            "tasks:list_project",
+            "tasks:list_projects",
         )
 
 
 class ProjectDeleteView(DeleteView):
     model = Project
-    success_url = reverse_lazy("tasks:list_project")
+    success_url = reverse_lazy("tasks:list_projects")
     template_name = "tasks/delete_project_view.html"
     pk_url_kwarg = "pk"
     context_object_name = "project"
@@ -73,7 +73,7 @@ class TaskCreateView(View):
             task = form.save(commit=False)
             task.project = self.project
             task.save()
-            return redirect("tasks:list_project", kwargs={"pk": self.project.pk})
+            return redirect("tasks:list_projects", kwargs={"pk": self.project.pk})
         return render(
             request, "tasks/create_task_view.html", {"form": form, "project_pk": pk}
         )

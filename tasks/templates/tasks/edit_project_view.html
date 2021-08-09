@@ -3,6 +3,6 @@
     {% csrf_token %}
     {{form.name}}
     <button type="submit" class="btn btn-success">Save changes</button>
-    <a href="{% url 'tasks:list_project' %}">Cancel</a>
+    <a href="{% url 'tasks:list_projects' %}">Cancel</a>
   </form>
 {% endblock %}
