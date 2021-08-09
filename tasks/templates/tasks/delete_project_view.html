@@ -3,6 +3,6 @@
     {% csrf_token %}
     <p>Are you sure you want to delete {{project}}?
     <button type="submit" class="btn btn-success">Delete</button>
-    <a href="{% url 'tasks:list_project' %}" role="button">Cancel</a>
+    <a href="{% url 'tasks:list_projects' %}" role="button">Cancel</a>
   </form>
 {% endblock %}
