@@ -28,4 +28,4 @@ class TaskForm(forms.ModelForm):
 
     class Meta:
         model = Task
-        fields = ["text", "tag", "completed"]
+        fields = ["text", "tag", "end", "completed"]
