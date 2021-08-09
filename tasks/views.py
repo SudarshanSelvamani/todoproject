@@ -73,7 +73,7 @@ class TaskCreateView(View):
             task = form.save(commit=False)
             task.project = self.project
             task.save()
-            return redirect("tasks:list_project", kwargs={"pk": self.project.pk})
+            return redirect(reverse("tasks:list_task", kwargs={"pk": self.project.pk}))
         return render(
             request, "tasks/create_task_view.html", {"form": form, "project_pk": pk}
         )
