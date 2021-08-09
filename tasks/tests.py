@@ -102,11 +102,13 @@ class TestProjectCreateView(TestCase):
         self.assertContains(response, "csrfmiddlewaretoken")
 
     def test_response_contains_projectform_object(self):
-        form = self.response.context.get("form")
+        url = reverse("tasks:create_project")
+        response = self.client.get(url)
+        form = response.context.get("form")
         self.assertIsInstance(form, ProjectForm)
 
     def test_project_save(self):
-        self.client.post("projects/create", {"name": "I am a test project"})
+        self.client.post("/projects/create", {"name": "I am a test project"})
         self.assertEqual(Project.objects.last().name, "I am a test project")
 
 
@@ -191,7 +193,9 @@ class TestTaskCreateView(TestCase):
         self.assertContains(response, "csrfmiddlewaretoken")
 
     def test_response_contains_taskform_object(self):
-        form = self.response.context.get("form")
+        url = reverse("tasks:create_task", args=[self.project1.pk])
+        response = self.client.get(url)
+        form = response.context.get("form")
         self.assertIsInstance(form, TaskForm)
 
     def test_task_saves(self):
@@ -223,11 +227,11 @@ class TestTaskUpdateView(TestCase):
         self.assertEquals(self.response.status_code, 200)
 
     def test_url_resolve_task_update_object(self):
-        view = resolve("projects/1/tasks/1/update")
+        view = resolve("/projects/1/tasks/1/update")
         self.assertEquals(view.func.view_class, TaskUpdateView)
 
     def test_presence_of_csrf(self):
-        url = reverse("tasks:update_task", args=[self.project1.pk])
+        url = reverse("tasks:update_task", args=[self.project1.pk, self.task1.pk])
         response = self.client.get(url)
         self.assertContains(response, "csrfmiddlewaretoken")
 
@@ -254,10 +258,10 @@ class TestTaskDeleteView(TestCase):
         self.assertEquals(self.response.status_code, 200)
 
     def test_url_resolve_task_delete_object(self):
-        view = resolve("projects/1/tasks/1/delete")
+        view = resolve("/projects/1/tasks/1/delete")
         self.assertEquals(view.func.view_class, TaskDeleteView)
 
     def test_presence_of_csrf(self):
-        url = reverse("tasks:delete_task", args=[self.project1.pk])
+        url = reverse("tasks:delete_task", args=[self.project1.pk, self.task1.pk])
         response = self.client.get(url)
         self.assertContains(response, "csrfmiddlewaretoken")
