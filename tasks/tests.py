@@ -1,7 +1,9 @@
 import random
 from django.test import TestCase
+from django.utils.timezone import now
 from django.http import response
 from django.urls import reverse, resolve
+from datetime import timedelta
 from tasks.models import Task, Project
 from .forms import ProjectForm, TaskForm
 from .views import (
@@ -13,6 +15,7 @@ from .views import (
     ProjectCreateView,
     TaskUpdateView,
     TaskDeleteView,
+    TaskOverdueListView,
 )
 
 # Create your tests here.
@@ -265,3 +268,48 @@ class TestTaskDeleteView(TestCase):
         url = reverse("tasks:delete_task", args=[self.project1.pk, self.task1.pk])
         response = self.client.get(url)
         self.assertContains(response, "csrfmiddlewaretoken")
+
+
+class TestTaskOverdueView(TestCase):
+    def setUp(self):
+        self.project1 = Project.objects.create(name="Deployment")
+
+        self.task1 = Task.objects.create(
+            text="Eat", project=self.project1, completed=True
+        )
+
+        self.task2 = Task.objects.create(
+            text="Sleep", project=self.project1, completed=False
+        )
+
+    def test_page_serve_successful(self):
+        self.url = reverse(
+            "tasks:list_overdue_tasks",
+            kwargs={"pk": self.project1.pk},
+        )
+        self.response = self.client.get(self.url)
+        self.assertEquals(self.response.status_code, 200)
+
+    def test_url_resolve_overdue_task_list_object(self):
+        view = resolve("/projects/1/overduetasks")
+        self.assertEquals(view.func.view_class, TaskOverdueListView)
+
+    def test_response_contains_overdue_tasks(self):
+        self.today = now()
+        print(self.today)
+        self.yesterday = self.today - timedelta(days=1)
+        self.task1 = Task.objects.create(
+            text="Overduetesttask",
+            project=self.project1,
+            end=self.yesterday,
+            completed=False,
+        )
+        self.task2 = Task.objects.create(
+            text="Overduetesttask2",
+            project=self.project1,
+            end=self.yesterday,
+            completed=True,
+        )
+        url = reverse("tasks:list_overdue_tasks", args=[self.project1.pk])
+        response = self.client.get(url)
+        self.assertContains(response, self.task1)
