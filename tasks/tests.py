@@ -273,6 +273,7 @@ class TestTaskDeleteView(TestCase):
 class TestTaskOverdueView(TestCase):
     def setUp(self):
         self.project1 = Project.objects.create(name="Deployment")
+        self.project2 = Project.objects.create(name="Deployment2")
 
         self.task1 = Task.objects.create(
             text="Eat", project=self.project1, completed=True
@@ -291,12 +292,11 @@ class TestTaskOverdueView(TestCase):
         self.assertEquals(self.response.status_code, 200)
 
     def test_url_resolve_overdue_task_list_object(self):
-        view = resolve("/projects/1/overduetasks")
+        view = resolve("/overduetasks/1")
         self.assertEquals(view.func.view_class, TaskOverdueListView)
 
     def test_response_contains_overdue_tasks(self):
         self.today = now()
-        print(self.today)
         self.yesterday = self.today - timedelta(days=1)
         self.task1 = Task.objects.create(
             text="Overduetesttask",
@@ -313,3 +313,23 @@ class TestTaskOverdueView(TestCase):
         url = reverse("tasks:list_overdue_tasks", args=[self.project1.pk])
         response = self.client.get(url)
         self.assertContains(response, self.task1)
+
+    def test_response_contains_all_projects_overdue_tasks(self):
+        self.today = now()
+        self.yesterday = self.today - timedelta(days=1)
+        self.task1 = Task.objects.create(
+            text="Overduetesttask",
+            project=self.project1,
+            end=self.yesterday,
+            completed=False,
+        )
+        self.task2 = Task.objects.create(
+            text="Overduetesttask2",
+            project=self.project2,
+            end=self.yesterday,
+            completed=False,
+        )
+        url = reverse("tasks:list_all_overdue_tasks")
+        response = self.client.get(url)
+        self.assertContains(response, self.task1)
+        self.assertContains(response, self.task2)

@@ -1,13 +1,11 @@
 <div>
+    <h1>Overdue tasks</h1>
     {% for task in overdue_tasks %}
         <div>
-            <a href="{% url 'tasks:update_task' project.id task.id %}">{{task}}</a>
-            <span><a href="{% url 'tasks:delete_task' project.id task.id%}">delete</a></span>
+            <a href="{% url 'tasks:update_task' task.project.id task.id %}">{{task}}</a>
+            <span><a href="{% url 'tasks:delete_task' task.project.id task.id%}">delete</a></span>
         </div>
     {% empty %}
         <div>No overdue tasks</div>
     {% endfor %}
-</div>
-<div>
-    <a href = "{% url 'tasks:list_task' project.id %}">Back to tasks</a>
 </div>
