@@ -115,13 +115,12 @@ class TaskOverdueListView(ListView):
 
     def get_queryset(self):
         overdue_tasks = Task.objects.filter(
-            project=self.kwargs.get("pk"),
             end__lte=now(),
             completed=False,
         )
-        return overdue_tasks
+        project = self.kwargs.get("pk", None)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["project"] = get_object_or_404(Project, pk=self.kwargs.get("pk"))
-        return context
+        if project:
+            overdue_tasks = overdue_tasks.filter(project=project)
+
+        return overdue_tasks
