@@ -19,6 +19,25 @@ from .views import (
 )
 
 # Create your tests here.
+class Mixin:
+    today = now()
+    yesterday = today - timedelta(days=1)
+
+    def create_project(
+        self,
+        project_name="Deployment",
+    ):
+        project = Project.objects.create(name=project_name)
+        return project
+
+    def create_task(self, task_text, project, end=yesterday, completed=False):
+        task = Task.objects.create(
+            text=task_text,
+            project=project,
+            end=end,
+            completed=completed,
+        )
+        return task
 
 
 class FormTest(TestCase):
@@ -272,11 +291,15 @@ class TestTaskDeleteView(TestCase):
 
 class TestTaskOverdueView(TestCase):
     def setUp(self):
-        self.project1 = Project.objects.create(name="Deployment")
+        self.project_name1 = "Deployment1"
+        self.project_name2 = "Lollipop2"
+        self.task_name1 = "test_overdue"
+        self.task_name2 = "test_overdue1"
+        self.project1 = Mixin.create_project(self, self.project_name1)
+        self.project2 = Mixin.create_project(self, self.project_name2)
 
-        self.task1 = Task.objects.create(
-            text="Eat", project=self.project1, completed=True
-        )
+        self.task1 = Mixin.create_task(self, self.task_name1, self.project1)
+        self.task2 = Mixin.create_task(self, self.task_name2, self.project2)
 
         self.task2 = Task.objects.create(
             text="Sleep", project=self.project1, completed=False
@@ -291,25 +314,38 @@ class TestTaskOverdueView(TestCase):
         self.assertEquals(self.response.status_code, 200)
 
     def test_url_resolve_overdue_task_list_object(self):
-        view = resolve("/projects/1/overduetasks")
+        view = resolve("/overduetasks/1")
         self.assertEquals(view.func.view_class, TaskOverdueListView)
 
     def test_response_contains_overdue_tasks(self):
         self.today = now()
-        print(self.today)
         self.yesterday = self.today - timedelta(days=1)
-        self.task1 = Task.objects.create(
-            text="Overduetesttask",
-            project=self.project1,
-            end=self.yesterday,
-            completed=False,
-        )
-        self.task2 = Task.objects.create(
-            text="Overduetesttask2",
-            project=self.project1,
-            end=self.yesterday,
-            completed=True,
-        )
-        url = reverse("tasks:list_overdue_tasks", args=[self.project1.pk])
+        self.project_name1 = "Deployment"
+        self.project_name2 = "Lollipop"
+        self.task_name1 = "test_overdue"
+        self.task_name2 = "test_overdue1"
+        project1 = Mixin.create_project(self, self.project_name1)
+        project2 = Mixin.create_project(self, self.project_name2)
+        task1 = Mixin.create_task(self, self.task_name1, project1, self.yesterday)
+        task2 = Mixin.create_task(self, self.task_name2, project2, self.yesterday, True)
+
+        url = reverse("tasks:list_overdue_tasks", args=[task1.project.pk])
         response = self.client.get(url)
-        self.assertContains(response, self.task1)
+        self.assertContains(response, task1)
+        self.assertNotContains(response, task2)
+
+    def test_response_contains_all_projects_overdue_tasks(self):
+        self.project_name1 = "Deployment"
+        self.project_name2 = "Lollipop"
+        self.task_name1 = "test_overdue"
+        self.task_name2 = "test_overdue1"
+        project1 = Mixin.create_project(self, self.project_name1)
+        project2 = Mixin.create_project(self, self.project_name2)
+
+        task1 = Mixin.create_task(self, self.task_name1, project1)
+        task2 = Mixin.create_task(self, self.task_name2, project2)
+
+        url = reverse("tasks:list_all_overdue_tasks")
+        response = self.client.get(url)
+        self.assertContains(response, task1)
+        self.assertContains(response, task2)
