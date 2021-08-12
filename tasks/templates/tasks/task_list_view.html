@@ -1,3 +1,11 @@
+<head>
+    {% load static %}
+    {% block scripts %} 
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/combine/npm/js-cookie@3.0.0,npm/js-cookie@3.0.0/index.min.js"></script>
+    <script src="{% static 'tasks/mark_as_complete.js' %}"></script> 
+    {% endblock scripts %}
+</head>
 <div><h1>List of tasks in {{project.name}}</h1></div>
 <hr>
 <div><a href="{% url 'tasks:create_task' project.id %}">Create Task</a></div>
@@ -8,8 +16,10 @@
         <div>
             <a href="{% url 'tasks:update_task' project.id task.id %}">{{task}}</a>
             <span><a href="{% url 'tasks:delete_task' project.id task.id %}">delete</a></span>
+            | Completed: <input {% if task.completed %} checked="checked" {% endif %}type="checkbox" value = "{{ task.completed }}" onclick="updateField({{ task.pk }})">
         </div>
     {% endfor %}
     {% endif %}
 
 </div>
+

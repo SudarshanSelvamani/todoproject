@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from .models import Project, Task
 from django.urls.base import reverse_lazy, reverse
 from .forms import TaskForm, ProjectForm
+from django.http import JsonResponse
 
 
 # Create your views here.
@@ -64,6 +65,17 @@ class TaskListView(ListView):
         context = super().get_context_data(**kwargs)
         context["project"] = get_object_or_404(Project, pk=self.kwargs.get("pk"))
         return context
+
+    def post(self, request, pk):
+        if request.is_ajax():
+            data = request.POST
+            task = Task.objects.get(pk=data.get("task_id"))
+            if task.completed:
+                task.completed = False
+            else:
+                task.completed = True
+            task.save()
+        return JsonResponse({"ok": True}, status=200)
 
 
 class TaskCreateView(View):
