@@ -1,5 +1,6 @@
 <div>
-  </div>
+    <a href="{% url 'logout' %}">logout</a>
+</div>
   {% block content %}
     <form method="post">
       {% csrf_token %}
