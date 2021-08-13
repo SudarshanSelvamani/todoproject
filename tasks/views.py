@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import ListView, UpdateView, DeleteView, View
 from datetime import datetime, timezone
 from .models import Project, Task
+from .filters import TaskFilter
 from django.urls.base import reverse_lazy, reverse
 from .forms import TaskForm, ProjectForm
 from django.http import JsonResponse
@@ -139,3 +140,13 @@ class TaskOverdueListView(ListView):
                 completed=False,
             )
         return overdue_tasks
+
+
+class TaskFilterView(ListView):
+    model = Task
+    template_name = "tasks/tasks_filter_view.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["filter"] = TaskFilter(self.request.GET, queryset=self.get_queryset())
+        return context
