@@ -5,6 +5,9 @@
     <script src="{% static 'tasks/mark_as_complete.js' %}"></script> 
     {% endblock scripts %}
 </head>
+<div>
+    <a href="{% url 'logout' %}">logout</a>
+</div>
 <div><h1>List of tasks in {{project.name}}</h1></div>
 <hr>
 <div><a href="{% url 'tasks:create_task' project.id %}">Create Task</a></div>

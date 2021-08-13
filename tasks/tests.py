@@ -6,6 +6,7 @@ from django.urls import reverse, resolve
 from datetime import timedelta
 from tasks.models import Task, Project
 from .forms import ProjectForm, TaskForm
+from django.contrib.auth.models import User
 from .views import (
     ProjectList,
     TaskListView,
@@ -45,7 +46,12 @@ class TestProjectListView(TestCase):
         self.task2 = Task.objects.create(
             text="Sleep", project=self.project1, completed=False
         )
-
+        self.username = "john"
+        self.password = "123"
+        user = User.objects.create_user(
+            username=self.username, email="john@doe.com", password=self.password
+        )
+        self.client.login(username=self.username, password=self.password)
         self.url = reverse("tasks:list_projects")
 
     def test_page_serve_successful(self):
@@ -68,6 +74,13 @@ class TestTaskListView(TestCase):
         self.task2 = Task.objects.create(
             text="Sleep", project=self.project1, completed=False
         )
+        self.username = "john"
+        self.password = "123"
+        user = User.objects.create_user(
+            username=self.username, email="john@doe.com", password=self.password
+        )
+
+        self.client.login(username=self.username, password=self.password)
 
     def test_page_serve_successful(self):
         self.url = reverse("tasks:list_task", args=[self.project1.pk])
@@ -90,6 +103,13 @@ class TestProjectCreateView(TestCase):
         self.task2 = Task.objects.create(
             text="Sleep", project=self.project1, completed=False
         )
+        self.username = "john"
+        self.password = "123"
+        user = User.objects.create_user(
+            username=self.username, email="john@doe.com", password=self.password
+        )
+
+        self.client.login(username=self.username, password=self.password)
 
     def test_page_serve_successful(self):
         self.url = reverse("tasks:create_project")
@@ -127,6 +147,12 @@ class TestProjectUpdateView(TestCase):
         self.task2 = Task.objects.create(
             text="Sleep", project=self.project1, completed=False
         )
+        self.username = "john"
+        self.password = "123"
+        user = User.objects.create_user(
+            username=self.username, email="john@doe.com", password=self.password
+        )
+        self.client.login(username=self.username, password=self.password)
 
     def test_page_serve_successful(self):
         self.url = reverse("tasks:update_project", kwargs={"pk": self.project1.pk})
@@ -154,6 +180,12 @@ class TestProjectDeleteView(TestCase):
         self.task2 = Task.objects.create(
             text="Sleep", project=self.project1, completed=False
         )
+        self.username = "john"
+        self.password = "123"
+        user = User.objects.create_user(
+            username=self.username, email="john@doe.com", password=self.password
+        )
+        self.client.login(username=self.username, password=self.password)
 
     def test_page_serve_successful(self):
         self.url = reverse("tasks:delete_project", kwargs={"pk": self.project1.pk})
@@ -181,6 +213,12 @@ class TestTaskCreateView(TestCase):
         self.task2 = Task.objects.create(
             text="Sleep", project=self.project1, completed=False
         )
+        self.username = "john"
+        self.password = "123"
+        user = User.objects.create_user(
+            username=self.username, email="john@doe.com", password=self.password
+        )
+        self.client.login(username=self.username, password=self.password)
 
     def test_page_serve_successful(self):
         self.url = reverse("tasks:create_task", args=[self.project1.pk])
@@ -225,6 +263,12 @@ class TestTaskUpdateView(TestCase):
             "tasks:update_task",
             kwargs={"pk": self.project1.pk, "task_pk": self.task1.pk},
         )
+        self.username = "john"
+        self.password = "123"
+        user = User.objects.create_user(
+            username=self.username, email="john@doe.com", password=self.password
+        )
+        self.client.login(username=self.username, password=self.password)
 
     def test_page_serve_successful(self):
         self.response = self.client.get(self.url)
@@ -256,6 +300,12 @@ class TestTaskDeleteView(TestCase):
             "tasks:delete_task",
             kwargs={"pk": self.project1.pk, "task_pk": self.task1.pk},
         )
+        self.username = "john"
+        self.password = "123"
+        user = User.objects.create_user(
+            username=self.username, email="john@doe.com", password=self.password
+        )
+        self.client.login(username=self.username, password=self.password)
 
     def test_page_serve_successful(self):
         self.response = self.client.get(self.url)
@@ -283,6 +333,12 @@ class TestTaskOverdueView(TestCase):
         self.task2 = Task.objects.create(
             text="Sleep", project=self.project1, completed=False
         )
+        self.username = "john"
+        self.password = "123"
+        user = User.objects.create_user(
+            username=self.username, email="john@doe.com", password=self.password
+        )
+        self.client.login(username=self.username, password=self.password)
 
     def test_page_serve_successful(self):
         self.url = reverse(
@@ -347,7 +403,12 @@ class TestTaskFilterView(TestCase):
         self.task2 = Task.objects.create(
             text="Sleep", project=self.project1, completed=False
         )
-
+        self.username = "john"
+        self.password = "123"
+        user = User.objects.create_user(
+            username=self.username, email="john@doe.com", password=self.password
+        )
+        self.client.login(username=self.username, password=self.password)
         self.url = reverse("tasks:task_search")
         self.response = self.client.get(self.url)
 

@@ -1,4 +1,7 @@
 <div>
+    <a href="{% url 'logout' %}">logout</a>
+</div>
+<div>
     <h1>Overdue tasks</h1>
     {% for task in overdue_tasks %}
         <div>
