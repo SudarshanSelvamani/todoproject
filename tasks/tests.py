@@ -16,6 +16,7 @@ from .views import (
     TaskUpdateView,
     TaskDeleteView,
     TaskOverdueListView,
+    TaskFilterView,
 )
 
 # Create your tests here.
@@ -349,3 +350,37 @@ class TestTaskOverdueView(TestCase):
         response = self.client.get(url)
         self.assertContains(response, task1)
         self.assertContains(response, task2)
+
+
+class TestTaskFilterView(TestCase):
+    def setUp(self):
+        self.project1 = Mixin.create_project(self)
+        self.task_name1 = "search1"
+        self.task_name2 = "search2"
+
+        self.task1 = Mixin.create_task(self, "search1", self.project1)
+
+        self.task2 = Mixin.create_task(self, "search2", self.project1)
+
+        self.url = reverse("tasks:task_search")
+        self.response = self.client.get(self.url)
+
+    def test_page_serve_successful(self):
+        self.url = reverse("tasks:task_search")
+        self.response = self.client.get(self.url)
+        self.assertEquals(self.response.status_code, 200)
+
+    def test_url_resolve_task_filter_object(self):
+        view = resolve("/taskssearch/")
+        self.assertEquals(view.func.view_class, TaskFilterView)
+
+    def test_presence_of_csrf(self):
+        url = reverse("tasks:task_search")
+        response = self.client.get(url)
+        self.assertContains(response, "csrfmiddlewaretoken")
+
+    def test_search_results(self):
+        self.client.post("/taskssearch/", {"text": "E"})
+        url = reverse("tasks:task_search")
+        response = self.client.get(url)
+        self.assertContains(response, self.task1)

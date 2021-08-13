@@ -1,0 +1,32 @@
+<div><h1>Search Tasks View<h1></div>
+    <div>
+        <form method = "GET">
+            {% csrf_token %}
+            Task:
+            {{ filter.form.text }}
+            Project:
+            {{filter.form.project}}
+            Overdue From and to
+            {{filter.form.end}}
+            <button type="submit" class="btn btn-success">Search</button>
+        </form>
+    
+        <ul>
+            {% for task in filter.qs %}
+            
+            <li>
+                <div>
+                    <a href="{% url 'tasks:update_task' task.project.id task.id %}">{{task}} - {{task.project.name}} - 
+                        {% if task.completed %}
+                        Completed
+                        {% else %}
+                        Not completed
+                        {% endif %}
+                    </a>
+                    <span><a href="{% url 'tasks:delete_task' task.project.id task.id%}">| delete</a></span>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    
+    </div>
