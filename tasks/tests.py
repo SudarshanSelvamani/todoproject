@@ -1,7 +1,9 @@
 import random
 from django.test import TestCase
+from django.utils.timezone import now
 from django.http import response
 from django.urls import reverse, resolve
+from datetime import timedelta
 from tasks.models import Task, Project
 from .forms import ProjectForm, TaskForm
 from .views import (
@@ -13,9 +15,26 @@ from .views import (
     ProjectCreateView,
     TaskUpdateView,
     TaskDeleteView,
+    TaskOverdueListView,
 )
 
 # Create your tests here.
+class Mixin:
+    def create_project(
+        self,
+        project_name="Deployment",
+    ):
+        project = Project.objects.create(name=project_name)
+        return project
+
+    def create_task(self, task_text, project, end, completed=False):
+        task = Task.objects.create(
+            text=task_text,
+            project=project,
+            end=end,
+            completed=completed,
+        )
+        return task
 
 
 class FormTest(TestCase):
@@ -265,3 +284,57 @@ class TestTaskDeleteView(TestCase):
         url = reverse("tasks:delete_task", args=[self.project1.pk, self.task1.pk])
         response = self.client.get(url)
         self.assertContains(response, "csrfmiddlewaretoken")
+
+
+class TestTaskOverdueView(TestCase, Mixin):
+    def setUp(self):
+        pass
+
+    def test_page_serve_successful(self):
+        self.project1 = self.create_project(project_name="Deployment")
+        self.url = reverse(
+            "tasks:list_overdue_tasks",
+            kwargs={"pk": self.project1.pk},
+        )
+        self.response = self.client.get(self.url)
+        self.assertEquals(self.response.status_code, 200)
+
+    def test_url_resolve_overdue_task_list_object(self):
+        view = resolve("/overduetasks/1")
+        self.assertEquals(view.func.view_class, TaskOverdueListView)
+
+    def test_response_contains_overdue_tasks(self):
+        self.today = now()
+        self.yesterday = self.today - timedelta(days=1)
+        project1 = self.create_project(project_name="Deployment")
+        project2 = self.create_project(project_name="Lollipop")
+        task1 = self.create_task(
+            task_text="test_overdue", project=project1, end=self.yesterday
+        )
+        task2 = self.create_task(
+            task_text="test_overdue1",
+            project=project2,
+            end=self.yesterday,
+            completed=True,
+        )
+
+        url = reverse("tasks:list_overdue_tasks", args=[task1.project.pk])
+        response = self.client.get(url)
+        self.assertContains(response, task1)
+        self.assertNotContains(response, task2)
+
+    def test_response_contains_all_projects_overdue_tasks(self):
+        self.today = now()
+        self.yesterday = self.today - timedelta(days=1)
+        project1 = self.create_project(project_name="Deployment")
+        project2 = self.create_project(project_name="Lollipop")
+        task1 = self.create_task(
+            task_text="test_overdue", project=project1, end=self.yesterday
+        )
+        task2 = self.create_task(
+            task_text="test_overdue1", project=project2, end=self.yesterday
+        )
+        url = reverse("tasks:list_all_overdue_tasks")
+        response = self.client.get(url)
+        self.assertContains(response, task1)
+        self.assertContains(response, task2)

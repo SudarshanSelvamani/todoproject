@@ -1,6 +1,8 @@
 from django.db.models.base import Model
+from django.utils.timezone import now
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import ListView, UpdateView, DeleteView, View
+from datetime import datetime, timezone
 from .models import Project, Task
 from django.urls.base import reverse_lazy, reverse
 from .forms import TaskForm, ProjectForm
@@ -104,3 +106,21 @@ class TaskDeleteView(DeleteView):
 
     def get_success_url(self, **kwargs):
         return reverse_lazy("tasks:list_task", kwargs={"pk": self.object.project.pk})
+
+
+class TaskOverdueListView(ListView):
+    model = Task
+    template_name = "tasks/overdue_tasks_view.html"
+    context_object_name = "overdue_tasks"
+
+    def get_queryset(self):
+        overdue_tasks = Task.objects.filter(
+            end__lte=now(),
+            completed=False,
+        )
+        project = self.kwargs.get("pk", None)
+
+        if project:
+            overdue_tasks = overdue_tasks.filter(project=project)
+
+        return overdue_tasks
