@@ -1,3 +1,4 @@
+import json
 from django.db.models.base import Model
 from django.utils.timezone import now
 from django.shortcuts import get_object_or_404, redirect, render
@@ -6,6 +7,7 @@ from datetime import datetime, timezone
 from .models import Project, Task
 from django.urls.base import reverse_lazy, reverse
 from .forms import TaskForm, ProjectForm
+from django.http import JsonResponse
 
 
 # Create your views here.
@@ -96,6 +98,14 @@ class TaskUpdateView(UpdateView):
     def form_valid(self, form):
         task = form.save()
         return redirect(reverse("tasks:list_task", kwargs={"pk": task.project.pk}))
+
+
+def task_completed_view(request, pk, task_pk):
+    if request.is_ajax():
+        task = get_object_or_404(Task, pk=task_pk)
+        task.completed = not task.completed
+        task.save()
+    return JsonResponse({"ok": True}, status=200)
 
 
 class TaskDeleteView(DeleteView):
