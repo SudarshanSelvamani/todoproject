@@ -9,17 +9,21 @@ from .filters import TaskFilter
 from django.urls.base import reverse_lazy, reverse
 from .forms import TaskForm, ProjectForm
 from django.http import JsonResponse
+from django.utils.decorators import method_decorator
+from django.contrib.auth.decorators import login_required
 
 
 # Create your views here.
 
 
+@method_decorator(login_required, name="dispatch")
 class ProjectList(ListView):
     template_name = "tasks/project_list_view.html"
     model = Project
     context_object_name = "projects"
 
 
+@method_decorator(login_required, name="dispatch")
 class ProjectCreateView(View):
     def post(self, request):
         form = ProjectForm(request.POST)
@@ -33,6 +37,7 @@ class ProjectCreateView(View):
         return render(request, "tasks/create_project_view.html", {"form": form})
 
 
+@method_decorator(login_required, name="dispatch")
 class ProjectUpdateView(UpdateView):
     model = Project
     fields = ("name",)
@@ -47,6 +52,7 @@ class ProjectUpdateView(UpdateView):
         )
 
 
+@method_decorator(login_required, name="dispatch")
 class ProjectDeleteView(DeleteView):
     model = Project
     success_url = reverse_lazy("tasks:list_projects")
@@ -55,6 +61,7 @@ class ProjectDeleteView(DeleteView):
     context_object_name = "project"
 
 
+@method_decorator(login_required, name="dispatch")
 class TaskListView(ListView):
     template_name = "tasks/task_list_view.html"
     model = Task
@@ -69,6 +76,7 @@ class TaskListView(ListView):
         return context
 
 
+@method_decorator(login_required, name="dispatch")
 class TaskCreateView(View):
     def post(self, request, pk):
         self.project = get_object_or_404(Project, pk=pk)
@@ -89,6 +97,7 @@ class TaskCreateView(View):
         )
 
 
+@method_decorator(login_required, name="dispatch")
 class TaskUpdateView(UpdateView):
     model = Task
     form_class = TaskForm
@@ -101,6 +110,7 @@ class TaskUpdateView(UpdateView):
         return redirect(reverse("tasks:list_task", kwargs={"pk": task.project.pk}))
 
 
+@login_required
 def task_completed_view(request, pk, task_pk):
     if request.is_ajax():
         task = get_object_or_404(Task, pk=task_pk)
@@ -109,6 +119,7 @@ def task_completed_view(request, pk, task_pk):
     return JsonResponse({"ok": True}, status=200)
 
 
+@method_decorator(login_required, name="dispatch")
 class TaskDeleteView(DeleteView):
     model = Task
     template_name = "tasks/delete_task_view.html"
@@ -119,6 +130,7 @@ class TaskDeleteView(DeleteView):
         return reverse_lazy("tasks:list_task", kwargs={"pk": self.object.project.pk})
 
 
+@method_decorator(login_required, name="dispatch")
 class TaskOverdueListView(ListView):
     model = Task
     template_name = "tasks/overdue_tasks_view.html"
@@ -137,6 +149,7 @@ class TaskOverdueListView(ListView):
         return overdue_tasks
 
 
+@method_decorator(login_required, name="dispatch")
 class TaskFilterView(ListView):
     model = Task
     template_name = "tasks/tasks_filter_view.html"

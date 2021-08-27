@@ -6,6 +6,7 @@ from django.urls import reverse, resolve
 from datetime import timedelta
 from tasks.models import Task, Project
 from .forms import ProjectForm, TaskForm
+from django.contrib.auth.models import User
 from .views import (
     ProjectList,
     TaskListView,
@@ -21,6 +22,7 @@ from .views import (
 
 # Create your tests here.
 class Mixin:
+
     def create_project(
         self,
         project_name="Deployment",
@@ -37,6 +39,12 @@ class Mixin:
         )
         return task
 
+    def create_user(self, username = "johndoe", email="john@doe.com", password='1234'):
+        user = User.objects.create_user(
+            username = username, email = email, password = password
+        )
+        return user
+
 
 class FormTest(TestCase):
     def test_projectform_inputs(self):
@@ -50,7 +58,7 @@ class FormTest(TestCase):
         self.assertTrue(self.form.is_valid())
 
 
-class TestProjectListView(TestCase):
+class TestProjectListView(TestCase, Mixin):
     def setUp(self):
         self.project1 = Project.objects.create(name="Deployment")
 
@@ -61,7 +69,8 @@ class TestProjectListView(TestCase):
         self.task2 = Task.objects.create(
             text="Sleep", project=self.project1, completed=False
         )
-
+        self.user = self.create_user()
+        self.client.login(username="johndoe", password="1234")
         self.url = reverse("tasks:list_projects")
 
     def test_page_serve_successful(self):
@@ -73,7 +82,7 @@ class TestProjectListView(TestCase):
         self.assertEquals(view.func.view_class, ProjectList)
 
 
-class TestTaskListView(TestCase):
+class TestTaskListView(TestCase, Mixin):
     def setUp(self):
         self.project1 = Project.objects.create(name="Deployment")
 
@@ -84,6 +93,8 @@ class TestTaskListView(TestCase):
         self.task2 = Task.objects.create(
             text="Sleep", project=self.project1, completed=False
         )
+        self.user = self.create_user()
+        self.client.login(username="johndoe", password="1234")
 
     def test_page_serve_successful(self):
         self.url = reverse("tasks:list_task", args=[self.project1.pk])
@@ -95,7 +106,7 @@ class TestTaskListView(TestCase):
         self.assertEquals(view.func.view_class, TaskListView)
 
 
-class TestProjectCreateView(TestCase):
+class TestProjectCreateView(TestCase, Mixin):
     def setUp(self):
         self.project1 = Project.objects.create(name="Deployment")
 
@@ -106,6 +117,8 @@ class TestProjectCreateView(TestCase):
         self.task2 = Task.objects.create(
             text="Sleep", project=self.project1, completed=False
         )
+        self.user = self.create_user()
+        self.client.login(username="johndoe", password="1234")
 
     def test_page_serve_successful(self):
         self.url = reverse("tasks:create_project")
@@ -132,7 +145,7 @@ class TestProjectCreateView(TestCase):
         self.assertEqual(Project.objects.last().name, "I am a test project")
 
 
-class TestProjectUpdateView(TestCase):
+class TestProjectUpdateView(TestCase, Mixin):
     def setUp(self):
         self.project1 = Project.objects.create(name="Deployment")
 
@@ -143,6 +156,8 @@ class TestProjectUpdateView(TestCase):
         self.task2 = Task.objects.create(
             text="Sleep", project=self.project1, completed=False
         )
+        self.user = self.create_user()
+        self.client.login(username="johndoe", password="1234")
 
     def test_page_serve_successful(self):
         self.url = reverse("tasks:update_project", kwargs={"pk": self.project1.pk})
@@ -159,7 +174,7 @@ class TestProjectUpdateView(TestCase):
         self.assertContains(response, "csrfmiddlewaretoken")
 
 
-class TestProjectDeleteView(TestCase):
+class TestProjectDeleteView(TestCase, Mixin):
     def setUp(self):
         self.project1 = Project.objects.create(name="Deployment")
 
@@ -170,6 +185,8 @@ class TestProjectDeleteView(TestCase):
         self.task2 = Task.objects.create(
             text="Sleep", project=self.project1, completed=False
         )
+        self.user = self.create_user()
+        self.client.login(username="johndoe", password="1234")
 
     def test_page_serve_successful(self):
         self.url = reverse("tasks:delete_project", kwargs={"pk": self.project1.pk})
@@ -186,7 +203,7 @@ class TestProjectDeleteView(TestCase):
         self.assertContains(response, "csrfmiddlewaretoken")
 
 
-class TestTaskCreateView(TestCase):
+class TestTaskCreateView(TestCase, Mixin):
     def setUp(self):
         self.project1 = Project.objects.create(name="Deployment")
 
@@ -197,6 +214,8 @@ class TestTaskCreateView(TestCase):
         self.task2 = Task.objects.create(
             text="Sleep", project=self.project1, completed=False
         )
+        self.user = self.create_user()
+        self.client.login(username="johndoe", password="1234")
 
     def test_page_serve_successful(self):
         self.url = reverse("tasks:create_task", args=[self.project1.pk])
@@ -225,7 +244,7 @@ class TestTaskCreateView(TestCase):
         self.assertEqual(Task.objects.last().project.name, self.project1.name)
 
 
-class TestTaskUpdateView(TestCase):
+class TestTaskUpdateView(TestCase, Mixin):
     def setUp(self):
         self.project1 = Project.objects.create(name="Deployment")
 
@@ -241,6 +260,8 @@ class TestTaskUpdateView(TestCase):
             "tasks:update_task",
             kwargs={"pk": self.project1.pk, "task_pk": self.task1.pk},
         )
+        self.user = self.create_user()
+        self.client.login(username="johndoe", password="1234")
 
     def test_page_serve_successful(self):
         self.response = self.client.get(self.url)
@@ -256,7 +277,7 @@ class TestTaskUpdateView(TestCase):
         self.assertContains(response, "csrfmiddlewaretoken")
 
 
-class TestTaskDeleteView(TestCase):
+class TestTaskDeleteView(TestCase, Mixin):
     def setUp(self):
         self.project1 = Project.objects.create(name="Deployment")
 
@@ -272,6 +293,8 @@ class TestTaskDeleteView(TestCase):
             "tasks:delete_task",
             kwargs={"pk": self.project1.pk, "task_pk": self.task1.pk},
         )
+        self.user = self.create_user()
+        self.client.login(username="johndoe", password="1234")
 
     def test_page_serve_successful(self):
         self.response = self.client.get(self.url)
@@ -289,7 +312,8 @@ class TestTaskDeleteView(TestCase):
 
 class TestTaskOverdueView(TestCase, Mixin):
     def setUp(self):
-        pass
+        self.user = self.create_user()
+        self.client.login(username="johndoe", password="1234")
 
     def test_page_serve_successful(self):
         self.project1 = self.create_project(project_name="Deployment")
@@ -351,6 +375,8 @@ class TestTaskFilterView(TestCase, Mixin):
         self.task2 = self.create_task(
             task_text="poppit", project=self.project1, end=self.today
         )
+        self.user = self.create_user()
+        self.client.login(username="johndoe", password="1234")
 
     def test_page_serve_successful(self):
         self.url = reverse("tasks:task_search")

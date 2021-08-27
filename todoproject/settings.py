@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "tasks",
+    "accounts",
     "taggit",
     "django_filters",
 ]
@@ -129,3 +130,15 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Login URL
+LOGIN_URL = "login"
+
+# Logout redirect view
+LOGOUT_REDIRECT_URL = "login"
+
+# Login redirect view
+LOGIN_REDIRECT_URL = "tasks:list_projects"
+
+# for Email in developement
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
