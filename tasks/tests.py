@@ -22,7 +22,6 @@ from .views import (
 
 # Create your tests here.
 class Mixin:
-
     def create_project(
         self,
         project_name="Deployment",
@@ -30,18 +29,19 @@ class Mixin:
         project = Project.objects.create(name=project_name)
         return project
 
-    def create_task(self, task_text, project, end, completed=False):
+    def create_task(self, task_text, project, end, assign_to=None, completed=False):
         task = Task.objects.create(
             text=task_text,
             project=project,
+            assign_to=assign_to,
             end=end,
             completed=completed,
         )
         return task
 
-    def create_user(self, username = "johndoe", email="john@doe.com", password='1234'):
+    def create_user(self, username="johndoe", email="john@doe.com", password="1234"):
         user = User.objects.create_user(
-            username = username, email = email, password = password
+            username=username, email=email, password=password
         )
         return user
 
@@ -334,11 +334,16 @@ class TestTaskOverdueView(TestCase, Mixin):
         project1 = self.create_project(project_name="Deployment")
         project2 = self.create_project(project_name="Lollipop")
         task1 = self.create_task(
-            task_text="test_overdue", project=project1, end=self.yesterday
+            task_text="test_overdue",
+            project=project1,
+            assign_to=self.user,
+            end=self.yesterday,
         )
+
         task2 = self.create_task(
             task_text="test_overdue1",
             project=project2,
+            assign_to=self.user,
             end=self.yesterday,
             completed=True,
         )
@@ -354,10 +359,16 @@ class TestTaskOverdueView(TestCase, Mixin):
         project1 = self.create_project(project_name="Deployment")
         project2 = self.create_project(project_name="Lollipop")
         task1 = self.create_task(
-            task_text="test_overdue", project=project1, end=self.yesterday
+            task_text="test_overdue",
+            project=project1,
+            assign_to=self.user,
+            end=self.yesterday,
         )
         task2 = self.create_task(
-            task_text="test_overdue1", project=project2, end=self.yesterday
+            task_text="test_overdue1",
+            project=project2,
+            assign_to=self.user,
+            end=self.yesterday,
         )
         url = reverse("tasks:list_all_overdue_tasks")
         response = self.client.get(url)

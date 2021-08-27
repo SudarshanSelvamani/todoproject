@@ -24,6 +24,24 @@
         </div>
     {% endfor %}
     {% endif %}
+    <hr>
+    <div>
+        Tasks assigned to others by you
+    </div>
+
+    {% for task in task_assigned_to_others %}
+    <div>
+            <a href="{% url 'tasks:update_task' project.id task.id %}">{{task}}</a>
+            <span><a href="{% url 'tasks:delete_task' project.id task.id %}">delete</a></span>
+            -- Assigned to {{task.assign_to}}
+    </div>
+    {% empty %}
+    <div>
+        No tasks to show
+    </div>
+    {% endfor %}
+
+
 
 </div>
 
