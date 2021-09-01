@@ -1,8 +1,10 @@
 import json
+from django.contrib.auth.models import User
 from django.db.models.base import Model
 from django.utils.timezone import now
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import ListView, UpdateView, DeleteView, View
+from django.contrib.auth.mixins import UserPassesTestMixin
 from datetime import datetime, timezone
 from .models import Project, Task
 from .filters import TaskFilter
@@ -22,13 +24,18 @@ class ProjectList(ListView):
     model = Project
     context_object_name = "projects"
 
+    def get_queryset(self):
+        return Project.objects.filter(permitted_users=self.request.user)
+
 
 @method_decorator(login_required, name="dispatch")
 class ProjectCreateView(View):
     def post(self, request):
         form = ProjectForm(request.POST)
         if form.is_valid():
-            form.save()
+            project = form.save()
+            project.permitted_users.add(self.request.user)
+
             return redirect("tasks:list_projects")
         return render(request, "tasks/create_project_view.html", {"form": form})
 
@@ -38,12 +45,19 @@ class ProjectCreateView(View):
 
 
 @method_decorator(login_required, name="dispatch")
-class ProjectUpdateView(UpdateView):
+class ProjectUpdateView(
+    UserPassesTestMixin,
+    UpdateView,
+):
     model = Project
-    fields = ("name",)
+    fields = ("name", "permitted_users")
     template_name = "tasks/edit_project_view.html"
     pk_url_kwarg = "pk"
     context_object_name = "project"
+
+    def test_func(self):
+        user = self.request.user
+        return user.project_set.filter(pk=self.kwargs.get("pk")).exists()
 
     def form_valid(self, form):
         project = form.save()
@@ -53,19 +67,27 @@ class ProjectUpdateView(UpdateView):
 
 
 @method_decorator(login_required, name="dispatch")
-class ProjectDeleteView(DeleteView):
+class ProjectDeleteView(UserPassesTestMixin, DeleteView):
     model = Project
     success_url = reverse_lazy("tasks:list_projects")
     template_name = "tasks/delete_project_view.html"
     pk_url_kwarg = "pk"
     context_object_name = "project"
 
+    def test_func(self):
+        user = self.request.user
+        return user.project_set.filter(pk=self.kwargs.get("pk")).exists()
+
 
 @method_decorator(login_required, name="dispatch")
-class TaskListView(ListView):
+class TaskListView(UserPassesTestMixin, ListView):
     template_name = "tasks/task_list_view.html"
     model = Task
     context_object_name = "tasks"
+
+    def test_func(self):
+        user = self.request.user
+        return user.project_set.filter(pk=self.kwargs.get("pk")).exists()
 
     def get_queryset(self):
         return Task.objects.filter(
@@ -82,7 +104,11 @@ class TaskListView(ListView):
 
 
 @method_decorator(login_required, name="dispatch")
-class TaskCreateView(View):
+class TaskCreateView(UserPassesTestMixin, View):
+    def test_func(self):
+        user = self.request.user
+        return user.project_set.filter(pk=self.kwargs.get("pk")).exists()
+
     def post(self, request, pk):
         self.project = get_object_or_404(Project, pk=pk)
         form = TaskForm(request.POST)
@@ -106,12 +132,16 @@ class TaskCreateView(View):
 
 
 @method_decorator(login_required, name="dispatch")
-class TaskUpdateView(UpdateView):
+class TaskUpdateView(UserPassesTestMixin, UpdateView):
     model = Task
     form_class = TaskForm
     template_name = "tasks/update_task_view.html"
     pk_url_kwarg = "task_pk"
     context_object_name = "task"
+
+    def test_func(self):
+        user = self.request.user
+        return user.project_set.filter(pk=self.kwargs.get("pk")).exists()
 
     def form_valid(self, form):
         task = form.save()
@@ -128,11 +158,15 @@ def task_completed_view(request, pk, task_pk):
 
 
 @method_decorator(login_required, name="dispatch")
-class TaskDeleteView(DeleteView):
+class TaskDeleteView(UserPassesTestMixin, DeleteView):
     model = Task
     template_name = "tasks/delete_task_view.html"
     pk_url_kwarg = "task_pk"
     context_object_name = "task"
+
+    def test_func(self):
+        user = self.request.user
+        return user.project_set.filter(pk=self.kwargs.get("pk")).exists()
 
     def get_success_url(self, **kwargs):
         return reverse_lazy("tasks:list_task", kwargs={"pk": self.object.project.pk})

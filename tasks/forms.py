@@ -1,4 +1,5 @@
 from django.forms import ModelForm, fields
+from django.contrib.auth.models import User
 from django import forms
 from .models import *
 
@@ -6,6 +7,10 @@ from .models import *
 class ProjectForm(ModelForm):
     name = forms.CharField(
         widget=forms.TextInput(attrs={"placeholder": "Add new project..."})
+    )
+
+    permitted_users = forms.ModelMultipleChoiceField(
+        queryset=User.objects.all(), required=False
     )
 
     class Meta:
