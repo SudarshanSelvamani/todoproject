@@ -1,12 +1,13 @@
-import random
 from django.test import TestCase
 from django.utils.timezone import now
-from django.http import response
 from django.urls import reverse, resolve
-from datetime import timedelta
-from tasks.models import Task, Project
-from .forms import ProjectForm, TaskForm
 from django.contrib.auth.models import User
+
+from datetime import timedelta
+
+from .models import Task, Project
+from .forms import ProjectForm, TaskForm
+
 from .views import (
     ProjectList,
     TaskListView,
@@ -60,23 +61,14 @@ class FormTest(TestCase):
 
 class TestProjectListView(TestCase, Mixin):
     def setUp(self):
-        self.project1 = Project.objects.create(name="Deployment")
-
-        self.task1 = Task.objects.create(
-            text="Eat", project=self.project1, completed=True
-        )
-
-        self.task2 = Task.objects.create(
-            text="Sleep", project=self.project1, completed=False
-        )
-
         user = self.create_user()
         self.client.force_login(user)
+        self.project1 = self.create_project(project_name="Deployment")
 
     def test_page_serve_successful(self):
-        self.url = reverse("tasks:list_projects")
-        self.response = self.client.get(self.url)
-        self.assertEquals(self.response.status_code, 200)
+        url = reverse("tasks:list_projects")
+        response = self.client.get(url)
+        self.assertEquals(response.status_code, 200)
 
     def test_urls_resolve_project_list_object(self):
         view = resolve("/projects/")
@@ -85,22 +77,15 @@ class TestProjectListView(TestCase, Mixin):
 
 class TestTaskListView(TestCase, Mixin):
     def setUp(self):
-        self.project1 = Project.objects.create(name="Deployment")
-
-        self.task1 = Task.objects.create(
-            text="Eat", project=self.project1, completed=True
-        )
-
-        self.task2 = Task.objects.create(
-            text="Sleep", project=self.project1, completed=False
-        )
         user = self.create_user()
         self.client.force_login(user)
 
+        self.project1 = self.create_project(project_name="Deployment")
+
     def test_page_serve_successful(self):
-        self.url = reverse("tasks:list_task", args=[self.project1.pk])
-        self.response = self.client.get(self.url)
-        self.assertEquals(self.response.status_code, 200)
+        url = reverse("tasks:list_task", args=[self.project1.pk])
+        response = self.client.get(url)
+        self.assertEquals(response.status_code, 200)
 
     def test_url_resolve_task_list_object(self):
         view = resolve("/projects/1")
@@ -109,22 +94,13 @@ class TestTaskListView(TestCase, Mixin):
 
 class TestProjectCreateView(TestCase, Mixin):
     def setUp(self):
-        self.project1 = Project.objects.create(name="Deployment")
-
-        self.task1 = Task.objects.create(
-            text="Eat", project=self.project1, completed=True
-        )
-
-        self.task2 = Task.objects.create(
-            text="Sleep", project=self.project1, completed=False
-        )
         user = self.create_user()
         self.client.force_login(user)
 
     def test_page_serve_successful(self):
-        self.url = reverse("tasks:create_project")
-        self.response = self.client.get(self.url)
-        self.assertEquals(self.response.status_code, 200)
+        url = reverse("tasks:create_project")
+        response = self.client.get(url)
+        self.assertEquals(response.status_code, 200)
 
     def test_url_resolve_project_update_object(self):
         view = resolve("/projects/create")
@@ -148,22 +124,15 @@ class TestProjectCreateView(TestCase, Mixin):
 
 class TestProjectUpdateView(TestCase, Mixin):
     def setUp(self):
-        self.project1 = Project.objects.create(name="Deployment")
-
-        self.task1 = Task.objects.create(
-            text="Eat", project=self.project1, completed=True
-        )
-
-        self.task2 = Task.objects.create(
-            text="Sleep", project=self.project1, completed=False
-        )
         user = self.create_user()
         self.client.force_login(user)
 
+        self.project1 = self.create_project(project_name="Deployment")
+
     def test_page_serve_successful(self):
-        self.url = reverse("tasks:update_project", kwargs={"pk": self.project1.pk})
-        self.response = self.client.get(self.url)
-        self.assertEquals(self.response.status_code, 200)
+        url = reverse("tasks:update_project", kwargs={"pk": self.project1.pk})
+        response = self.client.get(url)
+        self.assertEquals(response.status_code, 200)
 
     def test_url_resolve_project_update_object(self):
         view = resolve("/projects/1/update")
@@ -177,22 +146,15 @@ class TestProjectUpdateView(TestCase, Mixin):
 
 class TestProjectDeleteView(TestCase, Mixin):
     def setUp(self):
-        self.project1 = Project.objects.create(name="Deployment")
-
-        self.task1 = Task.objects.create(
-            text="Eat", project=self.project1, completed=True
-        )
-
-        self.task2 = Task.objects.create(
-            text="Sleep", project=self.project1, completed=False
-        )
         user = self.create_user()
         self.client.force_login(user)
 
+        self.project1 = self.create_project(project_name="Deployment")
+
     def test_page_serve_successful(self):
-        self.url = reverse("tasks:delete_project", kwargs={"pk": self.project1.pk})
-        self.response = self.client.get(self.url)
-        self.assertEquals(self.response.status_code, 200)
+        url = reverse("tasks:delete_project", kwargs={"pk": self.project1.pk})
+        response = self.client.get(url)
+        self.assertEquals(response.status_code, 200)
 
     def test_url_resolve_project_delete_object(self):
         view = resolve("/projects/1/delete")
@@ -206,22 +168,15 @@ class TestProjectDeleteView(TestCase, Mixin):
 
 class TestTaskCreateView(TestCase, Mixin):
     def setUp(self):
-        self.project1 = Project.objects.create(name="Deployment")
-
-        self.task1 = Task.objects.create(
-            text="Eat", project=self.project1, completed=True
-        )
-
-        self.task2 = Task.objects.create(
-            text="Sleep", project=self.project1, completed=False
-        )
         user = self.create_user()
         self.client.force_login(user)
 
+        self.project1 = self.create_project(project_name="Deployment")
+
     def test_page_serve_successful(self):
-        self.url = reverse("tasks:create_task", args=[self.project1.pk])
-        self.response = self.client.get(self.url)
-        self.assertEquals(self.response.status_code, 200)
+        url = reverse("tasks:create_task", args=[self.project1.pk])
+        response = self.client.get(url)
+        self.assertEquals(response.status_code, 200)
 
     def test_url_resolve_task_create_object(self):
         view = resolve("/projects/1/tasks/create")
@@ -247,26 +202,21 @@ class TestTaskCreateView(TestCase, Mixin):
 
 class TestTaskUpdateView(TestCase, Mixin):
     def setUp(self):
-        self.project1 = Project.objects.create(name="Deployment")
-
-        self.task1 = Task.objects.create(
-            text="Eat", project=self.project1, completed=True
+        user = self.create_user()
+        self.client.force_login(user)
+        today = now()
+        self.project1 = self.create_project(project_name="Deployment")
+        self.task1 = self.create_task(
+            task_text="search", project=self.project1, end=today
         )
 
-        self.task2 = Task.objects.create(
-            text="Sleep", project=self.project1, completed=False
-        )
-
-        self.url = reverse(
+    def test_page_serve_successful(self):
+        url = reverse(
             "tasks:update_task",
             kwargs={"pk": self.project1.pk, "task_pk": self.task1.pk},
         )
-        user = self.create_user()
-        self.client.force_login(user)
-
-    def test_page_serve_successful(self):
-        self.response = self.client.get(self.url)
-        self.assertEquals(self.response.status_code, 200)
+        response = self.client.get(url)
+        self.assertEquals(response.status_code, 200)
 
     def test_url_resolve_task_update_object(self):
         view = resolve("/projects/1/tasks/1/update")
@@ -280,26 +230,21 @@ class TestTaskUpdateView(TestCase, Mixin):
 
 class TestTaskDeleteView(TestCase, Mixin):
     def setUp(self):
-        self.project1 = Project.objects.create(name="Deployment")
-
-        self.task1 = Task.objects.create(
-            text="Eat", project=self.project1, completed=True
+        user = self.create_user()
+        self.client.force_login(user)
+        today = now()
+        self.project1 = self.create_project(project_name="Deployment")
+        self.task1 = self.create_task(
+            task_text="search", project=self.project1, end=today
         )
 
-        self.task2 = Task.objects.create(
-            text="Sleep", project=self.project1, completed=False
-        )
-
-        self.url = reverse(
+    def test_page_serve_successful(self):
+        url = reverse(
             "tasks:delete_task",
             kwargs={"pk": self.project1.pk, "task_pk": self.task1.pk},
         )
-        user = self.create_user()
-        self.client.force_login(user)
-
-    def test_page_serve_successful(self):
-        self.response = self.client.get(self.url)
-        self.assertEquals(self.response.status_code, 200)
+        response = self.client.get(url)
+        self.assertEquals(response.status_code, 200)
 
     def test_url_resolve_task_delete_object(self):
         view = resolve("/projects/1/tasks/1/delete")
@@ -317,35 +262,35 @@ class TestTaskOverdueView(TestCase, Mixin):
         self.client.force_login(self.user)
 
     def test_page_serve_successful(self):
-        self.project1 = self.create_project(project_name="Deployment")
-        self.url = reverse(
+        project1 = self.create_project(project_name="Deployment")
+        url = reverse(
             "tasks:list_overdue_tasks",
-            kwargs={"pk": self.project1.pk},
+            kwargs={"pk": project1.pk},
         )
-        self.response = self.client.get(self.url)
-        self.assertEquals(self.response.status_code, 200)
+        response = self.client.get(url)
+        self.assertEquals(response.status_code, 200)
 
     def test_url_resolve_overdue_task_list_object(self):
         view = resolve("/overduetasks/1")
         self.assertEquals(view.func.view_class, TaskOverdueListView)
 
     def test_response_contains_overdue_tasks(self):
-        self.today = now()
-        self.yesterday = self.today - timedelta(days=1)
+        today = now()
+        yesterday = today - timedelta(days=1)
         project1 = self.create_project(project_name="Deployment")
         project2 = self.create_project(project_name="Lollipop")
         task1 = self.create_task(
             task_text="test_overdue",
             project=project1,
             assign_to=self.user,
-            end=self.yesterday,
+            end=yesterday,
         )
 
         task2 = self.create_task(
             task_text="test_overdue1",
             project=project2,
             assign_to=self.user,
-            end=self.yesterday,
+            end=yesterday,
             completed=True,
         )
 
@@ -355,21 +300,21 @@ class TestTaskOverdueView(TestCase, Mixin):
         self.assertNotContains(response, task2)
 
     def test_response_contains_all_projects_overdue_tasks(self):
-        self.today = now()
-        self.yesterday = self.today - timedelta(days=1)
+        today = now()
+        yesterday = today - timedelta(days=1)
         project1 = self.create_project(project_name="Deployment")
         project2 = self.create_project(project_name="Lollipop")
         task1 = self.create_task(
             task_text="test_overdue",
             project=project1,
             assign_to=self.user,
-            end=self.yesterday,
+            end=yesterday,
         )
         task2 = self.create_task(
             task_text="test_overdue1",
             project=project2,
             assign_to=self.user,
-            end=self.yesterday,
+            end=yesterday,
         )
         url = reverse("tasks:list_all_overdue_tasks")
         response = self.client.get(url)
@@ -379,21 +324,22 @@ class TestTaskOverdueView(TestCase, Mixin):
 
 class TestTaskFilterView(TestCase, Mixin):
     def setUp(self):
-        self.today = now()
-        self.project1 = self.create_project(project_name="Search Task")
-        self.task1 = self.create_task(
-            task_text="search", project=self.project1, end=self.today
-        )
-        self.task2 = self.create_task(
-            task_text="poppit", project=self.project1, end=self.today
-        )
+        today = now()
         user = self.create_user()
         self.client.force_login(user)
 
+        self.project1 = self.create_project(project_name="Search Task")
+        self.task1 = self.create_task(
+            task_text="search", project=self.project1, end=today
+        )
+        self.task2 = self.create_task(
+            task_text="poppit", project=self.project1, end=today
+        )
+
     def test_page_serve_successful(self):
-        self.url = reverse("tasks:task_search")
-        self.response = self.client.get(self.url)
-        self.assertEquals(self.response.status_code, 200)
+        url = reverse("tasks:task_search")
+        response = self.client.get(url)
+        self.assertEquals(response.status_code, 200)
 
     def test_url_resolve_task_filter_object(self):
         view = resolve("/taskssearch/")
