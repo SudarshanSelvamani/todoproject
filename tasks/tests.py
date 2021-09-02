@@ -47,9 +47,10 @@ class Mixin:
         return user
 
 
-class FormTest(TestCase):
+class FormTest(TestCase, Mixin):
     def test_projectform_inputs(self):
-        self.form_data = {"name": "to do app"}
+        user = self.create_user()
+        self.form_data = {"name": "to do app", "permitted_users": [user]}
         self.form = ProjectForm(data=self.form_data)
         self.assertTrue(self.form.is_valid())
 
@@ -81,6 +82,7 @@ class TestTaskListView(TestCase, Mixin):
         self.client.force_login(user)
 
         self.project1 = self.create_project(project_name="Deployment")
+        self.project1.permitted_users.add(user)
 
     def test_page_serve_successful(self):
         url = reverse("tasks:list_task", args=[self.project1.pk])
@@ -118,7 +120,10 @@ class TestProjectCreateView(TestCase, Mixin):
         self.assertIsInstance(form, ProjectForm)
 
     def test_project_save(self):
-        self.client.post("/projects/create", {"name": "I am a test project"})
+        self.client.post(
+            "/projects/create",
+            {"name": "I am a test project"},
+        )
         self.assertEqual(Project.objects.last().name, "I am a test project")
 
 
@@ -128,6 +133,7 @@ class TestProjectUpdateView(TestCase, Mixin):
         self.client.force_login(user)
 
         self.project1 = self.create_project(project_name="Deployment")
+        self.project1.permitted_users.add(user)
 
     def test_page_serve_successful(self):
         url = reverse("tasks:update_project", kwargs={"pk": self.project1.pk})
@@ -150,6 +156,7 @@ class TestProjectDeleteView(TestCase, Mixin):
         self.client.force_login(user)
 
         self.project1 = self.create_project(project_name="Deployment")
+        self.project1.permitted_users.add(user)
 
     def test_page_serve_successful(self):
         url = reverse("tasks:delete_project", kwargs={"pk": self.project1.pk})
@@ -172,6 +179,7 @@ class TestTaskCreateView(TestCase, Mixin):
         self.client.force_login(user)
 
         self.project1 = self.create_project(project_name="Deployment")
+        self.project1.permitted_users.add(user)
 
     def test_page_serve_successful(self):
         url = reverse("tasks:create_task", args=[self.project1.pk])
@@ -206,6 +214,7 @@ class TestTaskUpdateView(TestCase, Mixin):
         self.client.force_login(user)
         today = now()
         self.project1 = self.create_project(project_name="Deployment")
+        self.project1.permitted_users.add(user)
         self.task1 = self.create_task(
             task_text="search", project=self.project1, end=today
         )
@@ -234,6 +243,7 @@ class TestTaskDeleteView(TestCase, Mixin):
         self.client.force_login(user)
         today = now()
         self.project1 = self.create_project(project_name="Deployment")
+        self.project1.permitted_users.add(user)
         self.task1 = self.create_task(
             task_text="search", project=self.project1, end=today
         )
